@@ -1,7 +1,10 @@
 import { test, expect } from '@playwright/test'
 
 test('login -> edit profile -> success', async ({ page }) => {
+  page.on('console', msg => console.log('PAGE LOG:', msg.type(), msg.text()));
+  page.on('pageerror', e => console.log('PAGE ERROR:', e.message, e.stack));
   await page.goto('/')
+  console.log('PAGE HTML:', await page.content())
   await page.waitForSelector('form[aria-label="login-form"]')
   await page.getByLabel('Email').fill('test@example.com')
   await page.getByLabel('Password').fill('Password1')
