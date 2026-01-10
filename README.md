@@ -1,6 +1,6 @@
 # My Login Page
 
-[![E2E Tests](https://github.com/<OWNER>/<REPO>/actions/workflows/e2e.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/e2e.yml)
+[![E2E Tests](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml/badge.svg)](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml)
 
 > Replace `<OWNER>/<REPO>` in the badge URL above with your repository path to display the workflow status.
 
