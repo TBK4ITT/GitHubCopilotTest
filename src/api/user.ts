@@ -35,14 +35,24 @@ function writeProfiles(profiles: Record<string, User>) {
 export async function updateProfile(user: User): Promise<{ ok: boolean; user?: User; message?: string }> {
   await delay()
 
+  // support overriding the simulate object via window.__simulate for E2E tests
+  const S = (typeof window !== 'undefined' && (window as any).__simulate) ? (window as any).__simulate : simulate
+  if (typeof window !== 'undefined' && !(window as any).__simulate) (window as any).__simulate = simulate
+
+  // debug: log simulate state at call time
+  try {
+    // eslint-disable-next-line no-console
+    console.log('DEBUG updateProfile simulate at call:', { failNext: S.failNext, failRate: S.failRate, rateLimitPerId: S.rateLimitPerId, requestCounts: S.requestCounts })
+  } catch (e) {}
+
   // deterministic failure for testing
-  if (simulate.failNext) {
-    simulate.failNext = false
+  if (S.failNext) {
+    S.failNext = false
     return { ok: false, message: 'Simulated failure' }
   }
 
   // random failures by rate
-  if (simulate.failRate > 0 && Math.random() < simulate.failRate) {
+  if (S.failRate > 0 && Math.random() < S.failRate) {
     return { ok: false, message: 'Random failure' }
   }
 
@@ -51,9 +61,9 @@ export async function updateProfile(user: User): Promise<{ ok: boolean; user?: U
   if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return { ok: false, message: 'Email invalid' }
 
   // rate limit per user id
-  if (simulate.rateLimitPerId > 0) {
-    simulate.requestCounts[user.id] = (simulate.requestCounts[user.id] || 0) + 1
-    if (simulate.requestCounts[user.id] > simulate.rateLimitPerId) {
+  if (S.rateLimitPerId > 0) {
+    S.requestCounts[user.id] = (S.requestCounts[user.id] || 0) + 1
+    if (S.requestCounts[user.id] > S.rateLimitPerId) {
       return { ok: false, message: 'Rate limit exceeded' }
     }
   }
