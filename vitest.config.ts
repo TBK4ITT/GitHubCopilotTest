@@ -2,8 +2,10 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    // Exclude Playwright E2E tests from Vitest runs
-    exclude: ['**/e2e/**', '**/playwright.config.*'],
+    // Only run unit tests in `src/` and exclude e2e and node_modules
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['**/e2e/**', '**/playwright.config.*', 'node_modules/**'],
     environment: 'jsdom',
+    globals: true,
   },
 })
