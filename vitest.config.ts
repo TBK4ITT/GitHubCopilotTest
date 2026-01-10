@@ -7,5 +7,7 @@ export default defineConfig({
     exclude: ['**/e2e/**', '**/playwright.config.*', 'node_modules/**'],
     environment: 'jsdom',
     globals: true,
+    // load jest-dom matchers and any global test setup
+    setupFiles: ['./src/setupTests.ts'],
   },
 })
