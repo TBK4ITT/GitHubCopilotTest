@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authenticate } from '../api/auth'
 import { useUser } from '../context/UserContext'
+import { validateEmail } from '../utils/validation'
 
 type FormState = {
   email: string
@@ -18,12 +19,10 @@ export default function Login() {
 
   const validate = (): boolean => {
     const next: Partial<FormState> = {}
-    if (!form.email) next.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Email is invalid'
-
+    const emailErr = validateEmail(form.email)
+    if (emailErr) next.email = emailErr
     if (!form.password) next.password = 'Password is required'
     else if (form.password.length < 8) next.password = 'Password must be at least 8 characters'
-
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -58,6 +57,8 @@ export default function Login() {
         <input
           id="email"
           type="text"
+          inputMode="email"
+          autoComplete="email"
           value={form.email}
           onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
         />
@@ -69,6 +70,7 @@ export default function Login() {
         <input
           id="password"
           type="password"
+          autoComplete="current-password"
           value={form.password}
           onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))}
         />

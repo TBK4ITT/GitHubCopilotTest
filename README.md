@@ -2,42 +2,40 @@
 
 [![E2E Tests](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml/badge.svg)](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml)
 
-> Replace `<OWNER>/<REPO>` in the badge URL above with your repository path to display the workflow status.
+> Replace `TBK4ITT/GitHubCopilotTest` in the badge URL above with your `OWNER/REPO` to show your workflow status.
 
-Simple React + TypeScript example with a login page, validations, a mock API, and unit tests (Vitest + React Testing Library).
+Simple React + TypeScript example with a login page, validations, a **mock** API (for demo only — do not use in production), and unit tests (Vitest + React Testing Library).
 
-Scripts:
-- npm run dev
-- npm run build
-- npm run preview
-- npm test
-- npm run test:watch
-- npm run test:e2e  # Playwright E2E tests
+**Scripts:**
+
+- `npm run dev` — start dev server
+- `npm run build` — production build
+- `npm run preview` — preview production build
+- `npm test` — run unit tests
+- `npm run test:watch` — unit tests in watch mode
+- `npm run test:coverage` — unit tests with coverage report
+- `npm run test:e2e` — Playwright E2E tests
+- `npm run lint` — run ESLint
+- `npm run lint:fix` — ESLint with auto-fix
+- `npm run format` — format code with Prettier
 
 ## End-to-end (E2E) tests
 
-This project includes Playwright E2E tests and a GitHub Actions workflow that runs them on push and pull requests to `main`.
+Playwright E2E tests run on push and pull requests to `main` via `.github/workflows/e2e.yml`.
 
-- Run E2E tests locally:
+**Run E2E locally:**
 
 ```bash
-# install browsers (if not already installed)
 npx playwright install --with-deps
-
-# start dev server in a terminal
-npm run dev
-
-# in another terminal run the tests
-npm run test:e2e
+npm run dev   # in one terminal
+npm run test:e2e   # in another
 ```
 
-- The workflow file is at `.github/workflows/e2e.yml` and will:
-  - install dependencies and Playwright browsers
-  - build and start a preview server
-  - run `npx playwright test` and upload an HTML report (`playwright-report`) as an artifact
+The CI workflow builds the app, starts the preview server, runs E2E tests, and uploads the Playwright HTML report as an artifact.
 
-You can also toggle dev-only simulated server failures at `/__dev__` to exercise failure and rate-limit flows in the E2E tests.
+You can toggle dev-only simulated server failures at `/__dev__` to exercise failure and rate-limit flows.
 
-Sample credentials:
-- email: test@example.com
-- password: Password1
+**Sample credentials (mock only):**
+
+- email: `test@example.com`
+- password: `Password1`

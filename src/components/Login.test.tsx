@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Login from './Login'
@@ -39,12 +39,7 @@ describe('Login component', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/email/i), 'bad-email')
     await user.type(screen.getByLabelText(/password/i), 'short')
-
-    // ensure inputs have the values before submitting
-    expect(await screen.findByDisplayValue('bad-email')).toBeInTheDocument()
-    expect(await screen.findByDisplayValue('short')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button'))
+    await user.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByText('Email is invalid')).toBeInTheDocument()
     expect(await screen.findByText('Password must be at least 8 characters')).toBeInTheDocument()

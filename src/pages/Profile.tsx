@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useUser } from '../context/UserContext'
 import { useToast } from '../context/ToastContext'
+import { updateProfile } from '../api/user'
+import { validateEmail } from '../utils/validation'
 
 export default function Profile() {
   const { user, setUser } = useUser()
@@ -10,11 +12,15 @@ export default function Profile() {
   const [errors, setErrors] = useState<{ name?: string; email?: string; form?: string }>({})
   const [isSaving, setIsSaving] = useState(false)
 
+  if (!user) {
+    return null
+  }
+
   const validate = () => {
     const next: { name?: string; email?: string } = {}
     if (!name.trim()) next.name = 'Name is required'
-    if (!email.trim()) next.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Email is invalid'
+    const emailErr = validateEmail(email)
+    if (emailErr) next.email = emailErr
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -22,7 +28,7 @@ export default function Profile() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
-    const updated = { ...(user || {}), name: name.trim(), email: email.trim() }
+    const updated: typeof user = { ...user, name: name.trim(), email: email.trim() }
 
     // optimistic update
     const prev = user
@@ -33,7 +39,7 @@ export default function Profile() {
     setErrors({})
 
     try {
-      const res = await (await import('../api/user')).updateProfile(updated)
+      const res = await updateProfile(updated)
       if (!res.ok) {
         // rollback
         setUser(prev || null)

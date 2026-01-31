@@ -1,4 +1,5 @@
 import { User } from '../types/user'
+import { isValidEmail } from '../utils/validation'
 
 const STORAGE_KEY = 'profiles'
 
@@ -36,14 +37,8 @@ export async function updateProfile(user: User): Promise<{ ok: boolean; user?: U
   await delay()
 
   // support overriding the simulate object via window.__simulate for E2E tests
-  const S = (typeof window !== 'undefined' && (window as any).__simulate) ? (window as any).__simulate : simulate
-  if (typeof window !== 'undefined' && !(window as any).__simulate) (window as any).__simulate = simulate
-
-  // debug: log simulate state at call time
-  try {
-    // eslint-disable-next-line no-console
-    console.log('DEBUG updateProfile simulate at call:', { failNext: S.failNext, failRate: S.failRate, rateLimitPerId: S.rateLimitPerId, requestCounts: S.requestCounts })
-  } catch (e) {}
+  const S = (typeof window !== 'undefined' && (window as Window & { __simulate?: typeof simulate }).__simulate) ? (window as Window & { __simulate: typeof simulate }).__simulate : simulate
+  if (typeof window !== 'undefined' && !(window as Window & { __simulate?: typeof simulate }).__simulate) (window as Window & { __simulate: typeof simulate }).__simulate = simulate
 
   // deterministic failure for testing
   if (S.failNext) {
@@ -58,7 +53,7 @@ export async function updateProfile(user: User): Promise<{ ok: boolean; user?: U
 
   // server-side validation
   if (!user.name || !user.name.trim()) return { ok: false, message: 'Name required' }
-  if (!user.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) return { ok: false, message: 'Email invalid' }
+  if (!user.email || !isValidEmail(user.email)) return { ok: false, message: 'Email invalid' }
 
   // rate limit per user id
   if (S.rateLimitPerId > 0) {

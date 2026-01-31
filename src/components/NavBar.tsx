@@ -24,8 +24,8 @@ export default function NavBar() {
     <nav className="nav">
       <div className="nav-left">Welcome, {user.name ?? user.email}</div>
       <div className="nav-right">
-        <button onClick={handleProfile}>Profile</button>
-        <button onClick={handleLogout}>Logout</button>
+        <button type="button" onClick={handleProfile}>Profile</button>
+        <button type="button" onClick={handleLogout}>Logout</button>
       </div>
     </nav>
   )

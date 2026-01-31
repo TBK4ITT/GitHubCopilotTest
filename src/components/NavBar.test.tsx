@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import NavBar from './NavBar'
@@ -25,11 +25,15 @@ describe('NavBar', () => {
 
     expect(screen.getByText(/Welcome, Tester/)).toBeInTheDocument()
     const user = userEvent.setup()
-    await user.click(screen.getByText('Logout'))
+    await act(async () => {
+      await user.click(screen.getByText('Logout'))
+      await screen.findByText('LoginPage')
+      await screen.findByText('Logged out')
+    })
 
     expect(localStorage.getItem('user')).toBeNull()
-    expect(await screen.findByText('LoginPage')).toBeInTheDocument()
-    expect(await screen.findByText('Logged out')).toBeInTheDocument()
+    expect(screen.getByText('LoginPage')).toBeInTheDocument()
+    expect(screen.getByText('Logged out')).toBeInTheDocument()
   })
 
   test('profile navigates to profile page', async () => {
@@ -49,9 +53,12 @@ describe('NavBar', () => {
     )
 
     const user = userEvent.setup()
-    await user.click(screen.getByText('Profile'))
+    await act(async () => {
+      await user.click(screen.getByText('Profile'))
+      await screen.findByText('ProfilePage')
+    })
 
-    expect(await screen.findByText('ProfilePage')).toBeInTheDocument()
+    expect(screen.getByText('ProfilePage')).toBeInTheDocument()
   })
 
   test('does not render when no user', () => {

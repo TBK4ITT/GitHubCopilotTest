@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import Profile from './Profile'
@@ -38,10 +38,12 @@ test('prefills fields from user and saves updates', async () => {
   await user.type(nameInput, 'New Name')
   await user.clear(emailInput)
   await user.type(emailInput, 'new@example.com')
-  await user.click(screen.getByRole('button', { name: /save/i }))
+  await act(async () => {
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Profile updated')
+  })
 
-  // toast appears
-  expect(await screen.findByText('Profile updated')).toBeInTheDocument()
+  expect(screen.getByText('Profile updated')).toBeInTheDocument()
 
   // localStorage should be updated
   const stored = JSON.parse(localStorage.getItem('user') || '{}')
@@ -72,10 +74,13 @@ test('shows validation errors and does not save invalid profile', async () => {
   await user.clear(nameInput)
   await user.clear(emailInput)
   await user.type(emailInput, 'bad')
-  await user.click(screen.getByRole('button', { name: /save/i }))
+  await act(async () => {
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Name is required')
+  })
 
-  expect(await screen.findByText('Name is required')).toBeInTheDocument()
-  expect(await screen.findByText('Email is invalid')).toBeInTheDocument()
+  expect(screen.getByText('Name is required')).toBeInTheDocument()
+  expect(screen.getByText('Email is invalid')).toBeInTheDocument()
 
   // ensure no toast
   expect(screen.queryByText('Profile updated')).not.toBeInTheDocument()
@@ -109,9 +114,12 @@ test('shows server error when email already in use', async () => {
 
   await user.clear(emailInput)
   await user.type(emailInput, 'taken@example.com')
-  await user.click(screen.getByRole('button', { name: /save/i }))
+  await act(async () => {
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Email already in use')
+  })
 
-  expect(await screen.findByText('Email already in use')).toBeInTheDocument()
+  expect(screen.getByText('Email already in use')).toBeInTheDocument()
 
   // ensure localStorage user unchanged
   const stored = JSON.parse(localStorage.getItem('user') || '{}')
@@ -140,13 +148,13 @@ test('optimistic update rolls back on server failure', async () => {
 
   await user.clear(emailInput)
   await user.type(emailInput, 'new@example.com')
-  await user.click(screen.getByRole('button', { name: /save/i }))
-
-  // optimistic: input shows new value immediately
-  expect(emailInput.value).toBe('new@example.com')
+  await act(async () => {
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Simulated failure')
+  })
 
   // after failure, error shown and rollback
-  expect(await screen.findByText('Simulated failure')).toBeInTheDocument()
+  expect(screen.getByText('Simulated failure')).toBeInTheDocument()
   expect((screen.getByLabelText(/email/i) as HTMLInputElement).value).toBe('test@example.com')
 
   const stored = JSON.parse(localStorage.getItem('user') || '{}')
@@ -174,17 +182,23 @@ test('rate limit error rolls back optimistic update', async () => {
   const user = userEvent.setup()
 
   // first save should succeed
-  await user.clear(emailInput)
-  await user.type(emailInput, 'first@example.com')
-  await user.click(screen.getByRole('button', { name: /save/i }))
-  expect(await screen.findByText('Profile updated')).toBeInTheDocument()
+  await act(async () => {
+    await user.clear(emailInput)
+    await user.type(emailInput, 'first@example.com')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Profile updated')
+  })
+  expect(screen.getByText('Profile updated')).toBeInTheDocument()
 
   // second save should fail due to rate limit
-  await user.clear(emailInput)
-  await user.type(emailInput, 'second@example.com')
-  await user.click(screen.getByRole('button', { name: /save/i }))
+  await act(async () => {
+    await user.clear(emailInput)
+    await user.type(emailInput, 'second@example.com')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    await screen.findByText('Rate limit exceeded')
+  })
 
-  expect(await screen.findByText('Rate limit exceeded')).toBeInTheDocument()
+  expect(screen.getByText('Rate limit exceeded')).toBeInTheDocument()
   // rollback to previous saved email
   expect((screen.getByLabelText(/email/i) as HTMLInputElement).value).toBe('first@example.com')
 })

@@ -1,19 +1,34 @@
-import React, { createContext, useCallback, useContext, useState } from 'react'
+import React, { createContext, useCallback, useContext, useRef, useState } from 'react'
 import Toast from '../components/Toast'
 
 type ToastContextValue = {
   showToast: (message: string) => void
 }
 
+const TOAST_DURATION_MS = 3000
+
 const ToastContext = createContext<ToastContextValue | undefined>(undefined)
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [message, setMessage] = useState<string | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const showToast = useCallback((m: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
     setMessage(m)
-    // hide after 3s
-    setTimeout(() => setMessage(null), 3000)
+    timeoutRef.current = setTimeout(() => {
+      setMessage(null)
+      timeoutRef.current = null
+    }, TOAST_DURATION_MS)
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
   }, [])
 
   return (
