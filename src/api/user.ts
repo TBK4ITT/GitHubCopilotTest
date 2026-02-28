@@ -21,6 +21,11 @@ export const simulate = {
   },
 }
 
+// expose the simulation object on the global window so tests can mutate it directly
+if (typeof window !== 'undefined') {
+  ;(window as any).simulate = simulate
+}
+
 function readProfiles(): Record<string, User> {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') as Record<string, User>
@@ -36,18 +41,14 @@ function writeProfiles(profiles: Record<string, User>) {
 export async function updateProfile(user: User): Promise<{ ok: boolean; user?: User; message?: string }> {
   await delay()
 
-  // support overriding the simulate object via window.__simulate for E2E tests
-  const S = (typeof window !== 'undefined' && (window as Window & { __simulate?: typeof simulate }).__simulate) ? (window as Window & { __simulate: typeof simulate }).__simulate : simulate
-  if (typeof window !== 'undefined' && !(window as Window & { __simulate?: typeof simulate }).__simulate) (window as Window & { __simulate: typeof simulate }).__simulate = simulate
-
   // deterministic failure for testing
-  if (S.failNext) {
-    S.failNext = false
+  if (simulate.failNext) {
+    simulate.failNext = false
     return { ok: false, message: 'Simulated failure' }
   }
 
   // random failures by rate
-  if (S.failRate > 0 && Math.random() < S.failRate) {
+  if (simulate.failRate > 0 && Math.random() < simulate.failRate) {
     return { ok: false, message: 'Random failure' }
   }
 
@@ -56,9 +57,9 @@ export async function updateProfile(user: User): Promise<{ ok: boolean; user?: U
   if (!user.email || !isValidEmail(user.email)) return { ok: false, message: 'Email invalid' }
 
   // rate limit per user id
-  if (S.rateLimitPerId > 0) {
-    S.requestCounts[user.id] = (S.requestCounts[user.id] || 0) + 1
-    if (S.requestCounts[user.id] > S.rateLimitPerId) {
+  if (simulate.rateLimitPerId > 0) {
+    simulate.requestCounts[user.id] = (simulate.requestCounts[user.id] || 0) + 1
+    if (simulate.requestCounts[user.id] > simulate.rateLimitPerId) {
       return { ok: false, message: 'Rate limit exceeded' }
     }
   }

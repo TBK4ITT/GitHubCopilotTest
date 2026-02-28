@@ -1,5 +1,6 @@
 # My Login Page
 
+[![CI](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/ci.yml/badge.svg)](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/ci.yml)
 [![E2E Tests](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml/badge.svg)](https://github.com/TBK4ITT/GitHubCopilotTest/actions/workflows/e2e.yml)
 
 > Replace `TBK4ITT/GitHubCopilotTest` in the badge URL above with your `OWNER/REPO` to show your workflow status.

@@ -30,11 +30,10 @@ test('dev simulate failNext triggers rollback', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.getByText('Welcome, Test User!')).toBeVisible()
 
-  await page.evaluate(async () => {
-    const m = await import('/src/api/user')
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate = m.simulate
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate.failNext = true
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate.requestCounts = {}
+  await page.evaluate(() => {
+    // mutate the shared simulate object that the module attached to window
+    window.simulate.failNext = true
+    window.simulate.requestCounts = {}
   })
 
   await page.getByText('Profile').click()
@@ -54,11 +53,9 @@ test('dev simulate rate limit enforces limit and rollbacks', async ({ page }) =>
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.getByText('Welcome, Test User!')).toBeVisible()
 
-  await page.evaluate(async () => {
-    const m = await import('/src/api/user')
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate = m.simulate
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate.rateLimitPerId = 1
-    ;(window as Window & { __simulate: typeof m.simulate }).__simulate.requestCounts = {}
+  await page.evaluate(() => {
+    window.simulate.rateLimitPerId = 1
+    window.simulate.requestCounts = {}
   })
 
   await page.getByText('Profile').click()
