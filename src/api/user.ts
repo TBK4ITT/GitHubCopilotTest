@@ -21,10 +21,6 @@ export const simulate = {
   },
 }
 
-// expose the simulation object on the global window so tests can mutate it directly
-if (typeof window !== 'undefined') {
-  ;(window as any).simulate = simulate
-}
 
 function readProfiles(): Record<string, User> {
   try {
@@ -41,14 +37,17 @@ function writeProfiles(profiles: Record<string, User>) {
 export async function updateProfile(user: User): Promise<{ ok: boolean; user?: User; message?: string }> {
   await delay()
 
+  // allow tests to inject a different simulate object via globalThis
+  const S: typeof simulate = ((globalThis as any).simulate as typeof simulate) || simulate
+
   // deterministic failure for testing
-  if (simulate.failNext) {
-    simulate.failNext = false
+  if (S.failNext) {
+    S.failNext = false
     return { ok: false, message: 'Simulated failure' }
   }
 
   // random failures by rate
-  if (simulate.failRate > 0 && Math.random() < simulate.failRate) {
+  if (S.failRate > 0 && Math.random() < S.failRate) {
     return { ok: false, message: 'Random failure' }
   }
 
@@ -57,9 +56,9 @@ export async function updateProfile(user: User): Promise<{ ok: boolean; user?: U
   if (!user.email || !isValidEmail(user.email)) return { ok: false, message: 'Email invalid' }
 
   // rate limit per user id
-  if (simulate.rateLimitPerId > 0) {
-    simulate.requestCounts[user.id] = (simulate.requestCounts[user.id] || 0) + 1
-    if (simulate.requestCounts[user.id] > simulate.rateLimitPerId) {
+  if (S.rateLimitPerId > 0) {
+    S.requestCounts[user.id] = (S.requestCounts[user.id] || 0) + 1
+    if (S.requestCounts[user.id] > S.rateLimitPerId) {
       return { ok: false, message: 'Rate limit exceeded' }
     }
   }

@@ -1,5 +1,23 @@
 import { test, expect } from '@playwright/test'
 
+// ensure a simulate object is present before the app loads in every test
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.simulate = {
+      failNext: false,
+      failRate: 0,
+      rateLimitPerId: 0,
+      requestCounts: {},
+      reset() {
+        this.failNext = false
+        this.failRate = 0
+        this.rateLimitPerId = 0
+        this.requestCounts = {}
+      },
+    }
+  })
+})
+
 test('login -> edit profile -> success', async ({ page }) => {
   await page.goto('/')
   await page.waitForSelector('form[aria-label="login-form"]')
@@ -31,7 +49,6 @@ test('dev simulate failNext triggers rollback', async ({ page }) => {
   await expect(page.getByText('Welcome, Test User!')).toBeVisible()
 
   await page.evaluate(() => {
-    // mutate the shared simulate object that the module attached to window
     window.simulate.failNext = true
     window.simulate.requestCounts = {}
   })
